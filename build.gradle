@@ -14,4 +14,6 @@ repositories {
 dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.10'
     testCompile 'org.junit.jupiter:junit-jupiter:5.4.2'
+    testCompile "org.mockito:mockito-core:2.+"
+    testCompile 'org.mockito:mockito-junit-jupiter:2.23.0'
 }

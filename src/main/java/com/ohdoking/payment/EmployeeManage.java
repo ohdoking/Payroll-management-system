@@ -1,14 +1,18 @@
 package com.ohdoking.payment;
 
 import com.ohdoking.payment.model.Employee;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class EmployeeManage {
 
-    public String addEmpWithCommission(Integer id, String name, String address, String paymentType, Double monthlyPay, Double commissionRate) {
+    final private EmployeeRepository employeeRepository;
+
+    public void addEmpWithCommission(Integer id, String name, String address, String paymentType, Double monthlyPay, Double commissionRate) {
         if (monthlyPay == null || commissionRate == null){
             throw new NullPointerException("monthlyPay or commissionRate is missing");
         }
-        return addEmp(Employee.builder()
+        addEmp(Employee.builder()
                 .id(id)
                 .name(name)
                 .address(address)
@@ -19,11 +23,11 @@ public class EmployeeManage {
 
     }
 
-    public String addEmpWithMonthlyPay(Integer id, String name, String address, String paymentType, Double monthlyPay) {
+    public void addEmpWithMonthlyPay(Integer id, String name, String address, String paymentType, Double monthlyPay) {
         if (monthlyPay == null){
             throw new NullPointerException("monthlyPay is missing");
         }
-        return addEmp(Employee.builder()
+        addEmp(Employee.builder()
                 .id(id)
                 .name(name)
                 .address(address)
@@ -32,11 +36,11 @@ public class EmployeeManage {
                 .build());
     }
 
-    public String addEmpWithHourlyRate(Integer id, String name, String address, String paymentType, Double hourlyRate) {
+    public void addEmpWithHourlyRate(Integer id, String name, String address, String paymentType, Double hourlyRate) {
         if (hourlyRate == null){
             throw new NullPointerException("hourlyRate is missing");
         }
-        return addEmp(Employee.builder()
+        addEmp(Employee.builder()
                 .id(id)
                 .name(name)
                 .address(address)
@@ -45,9 +49,11 @@ public class EmployeeManage {
                 .build());
     }
 
-    private String addEmp(Employee employee){
-
-        return "success";
+    private void addEmp(Employee employee){
+        employeeRepository.addEmployee(employee);
     }
 
+    public void delEmp(int id) {
+        employeeRepository.deleteEmployee(id);
+    }
 }

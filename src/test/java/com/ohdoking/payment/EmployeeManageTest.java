@@ -1,20 +1,31 @@
 package com.ohdoking.payment;
 
 
-import org.junit.jupiter.api.BeforeEach;
+import com.ohdoking.payment.exception.ResourceNotFoundException;
+import com.ohdoking.payment.model.Employee;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.BDDMockito;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.security.InvalidParameterException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.BDDMockito.*;
 
+@ExtendWith(MockitoExtension.class)
 public class EmployeeManageTest {
 
+    @InjectMocks
     EmployeeManage employeeManage;
 
-    @BeforeEach
-    public void init() {
-        employeeManage = new EmployeeManage();
-    }
+    @Mock
+    EmployeeRepository employeeRepository;
 
     /**
      * usecase 1
@@ -37,11 +48,14 @@ public class EmployeeManageTest {
         String paymentType = "H";
         double hourlyRate = 8.0;
 
+        willDoNothing().given(employeeRepository).addEmployee(any(Employee.class));
+
         // when
-        String actual = employeeManage.addEmpWithHourlyRate(id, name, address, paymentType, hourlyRate);
+        employeeManage.addEmpWithHourlyRate(id, name, address, paymentType, hourlyRate);
 
         // then
-        assertEquals("success", actual);
+
+        BDDMockito.verify(employeeRepository).addEmployee(any(Employee.class));
 
     }
 
@@ -56,11 +70,13 @@ public class EmployeeManageTest {
         String paymentType = "S";
         double monthlyPay = 300.0;
 
+        willDoNothing().given(employeeRepository).addEmployee(any(Employee.class));
+
         // when
-        String actual = employeeManage.addEmpWithMonthlyPay(id, name, address, paymentType, monthlyPay);
+        employeeManage.addEmpWithMonthlyPay(id, name, address, paymentType, monthlyPay);
 
         // then
-        assertEquals("success", actual);
+        BDDMockito.verify(employeeRepository).addEmployee(any(Employee.class));
 
     }
 
@@ -77,11 +93,13 @@ public class EmployeeManageTest {
         double monthlyPay = 300.0;
         double commissionRate = 0.02;
 
+        willDoNothing().given(employeeRepository).addEmployee(any(Employee.class));
+
         // when
-        String actual = employeeManage.addEmpWithCommission(id, name, address, paymentType, monthlyPay, commissionRate);
+        employeeManage.addEmpWithCommission(id, name, address, paymentType, monthlyPay, commissionRate);
 
         // then
-        assertEquals("success", actual);
+        BDDMockito.verify(employeeRepository).addEmployee(any(Employee.class));
 
     }
 
@@ -101,6 +119,63 @@ public class EmployeeManageTest {
 
         // then
         assertEquals("hourlyRate is missing", actual.getMessage());
+        BDDMockito.verifyZeroInteractions(employeeRepository);
+
+    }
+
+    /**
+     * usecase 2
+     *
+     * delete employee id
+     */
+
+    @Test
+    public void givenValidEmployeeIdWhenExecuteDelEmpThenDeleteUser() {
+
+        // given
+        int id = 1;
+
+        willDoNothing().given(employeeRepository).deleteEmployee(anyInt());
+
+        // when
+        employeeManage.delEmp(id);
+
+        // then
+        BDDMockito.verify(employeeRepository).deleteEmployee(anyInt());
+
+    }
+
+    @Test
+    public void givenInvalidEmployeeIdWhenExecuteDelEmpThenThrowInvalidParameterException() {
+
+        // given
+        int id = 123123213;
+
+        willThrow(new InvalidParameterException("id is invalid format")).given(employeeRepository).deleteEmployee(anyInt());
+
+        // when
+        InvalidParameterException actual = assertThrows(InvalidParameterException.class, () -> employeeManage.delEmp(id));
+
+        // then
+        assertEquals("id is invalid format", actual.getMessage());
+        BDDMockito.verify(employeeRepository).deleteEmployee(anyInt());
+
+    }
+
+    @Test
+    public void givenNonExistsEmployeeIdWhenExecuteDelEmpThenThrowResourceNotFoundException() {
+
+        // given
+        int id = 123123213;
+
+        willThrow(new ResourceNotFoundException("id doesn't exist")).given(employeeRepository).deleteEmployee(anyInt());
+
+        // when
+        ResourceNotFoundException actual = assertThrows(ResourceNotFoundException.class, () -> employeeManage.delEmp(id));
+
+        // then
+        assertEquals("id doesn't exist", actual.getMessage());
+        BDDMockito.verify(employeeRepository).deleteEmployee(anyInt());
 
     }
 
