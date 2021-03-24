@@ -6,6 +6,7 @@ This Project is for payroll management system.
 
 1. practice tdd
 2. apply design pattern
+3. practice refactoring
 
 
 ## 급여 관리 시스템의 기본명세
