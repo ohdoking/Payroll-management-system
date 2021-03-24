@@ -281,6 +281,25 @@ public class EmployeeManageTest {
         BDDMockito.verifyZeroInteractions(timeCardRepository);
     }
 
+    @Test
+    public void givenNonExistEmployeeWhenExecuteWriteTimeCardThenThrowResourceNotFoundException(){
+
+        // given
+        UUID employeeId = UUID.randomUUID();
+        LocalDate localDate = LocalDate.now();
+        Double hours = 10.0;
+
+        given(employeeRepository.getEmployee(any(UUID.class))).willReturn(null);
+
+        // when
+        ResourceNotFoundException actual = assertThrows(ResourceNotFoundException.class, () -> employeeManage.addTimeCard(employeeId, localDate, hours));
+
+        // then
+        assertEquals(employeeId.toString() + " id of employee doesn't exist", actual.getMessage());
+        BDDMockito.verify(employeeRepository).getEmployee(any(UUID.class));
+        BDDMockito.verifyNoMoreInteractions(timeCardRepository);
+    }
+
     /**
      * usecase 4
      *
@@ -375,8 +394,28 @@ public class EmployeeManageTest {
         // then
         assertEquals("amount is marked non-null but is null", actual.getMessage());
         BDDMockito.verify(employeeRepository).getEmployee(any(UUID.class));
-        BDDMockito.verifyZeroInteractions(timeCardRepository);
+        BDDMockito.verifyZeroInteractions(salesReceiptRepository);
     }
+
+    @Test
+    public void givenNonExistEmployeeWhenExecuteAddSalesReceiptThenThrowResourceNotFoundException(){
+
+        // given
+        UUID employeeId = UUID.randomUUID();
+        LocalDate localDate = LocalDate.now();
+        Integer amount = 10;
+
+        given(employeeRepository.getEmployee(any(UUID.class))).willReturn(null);
+
+        // when
+        ResourceNotFoundException actual = assertThrows(ResourceNotFoundException.class, () -> employeeManage.addSalesReceipt(employeeId, localDate, amount));
+
+        // then
+        assertEquals(employeeId.toString() + " id of employee doesn't exist", actual.getMessage());
+        BDDMockito.verify(employeeRepository).getEmployee(any(UUID.class));
+        BDDMockito.verifyNoMoreInteractions(salesReceiptRepository);
+    }
+
 
     /**
      * usecase 5
@@ -433,8 +472,6 @@ public class EmployeeManageTest {
         assertEquals(employeeId.toString() + " id of employee doesn't exist", actual.getMessage());
         BDDMockito.verify(employeeRepository).getEmployee(any(UUID.class));
         BDDMockito.verifyNoMoreInteractions(serviceChargeRepository);
-
-
     }
 
     @Test

@@ -72,7 +72,10 @@ public class EmployeeManage {
     public void addTimeCard(UUID employeeId, LocalDate localDate, Double hours) {
 
         Employee employee = employeeRepository.getEmployee(employeeId);
-        if (!employee.getPaymentType().equals(PaymentType.H)) {
+        if (employee == null) {
+            throw new ResourceNotFoundException(String.format("%s id of employee doesn't exist", employeeId.toString()));
+        }
+        else if (!employee.getPaymentType().equals(PaymentType.H)) {
             throw new IncorrectPaymentTypeEmployeeException("The employee is not H type of employee");
         }
 
@@ -88,7 +91,10 @@ public class EmployeeManage {
     public void addSalesReceipt(UUID employeeId, LocalDate localDate, Integer amount) {
 
         Employee employee = employeeRepository.getEmployee(employeeId);
-        if (!employee.getPaymentType().equals(PaymentType.C)) {
+        if (employee == null) {
+            throw new ResourceNotFoundException(String.format("%s id of employee doesn't exist", employeeId.toString()));
+        }
+        else if (!employee.getPaymentType().equals(PaymentType.C)) {
             throw new IncorrectPaymentTypeEmployeeException("The employee is not C type of employee");
         }
 
