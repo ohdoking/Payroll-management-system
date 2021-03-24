@@ -420,7 +420,7 @@ public class EmployeeManageTest {
     /**
      * usecase 5
      *
-     * t ad
+     * write service charge
      *
      * service charge id, amount
      *
@@ -501,6 +501,59 @@ public class EmployeeManageTest {
         BDDMockito.verifyNoMoreInteractions(serviceChargeRepository);
     }
 
+    /**
+     * usecase 6
+     *
+     * Change employee information
+     *
+     * ChgEmp id, name type, name
+     *  - change name of employee
+     * ChgEmp id, address type, address
+     *  - change name of address
+     * ChgEmp id, hourly type, hourly
+     *  - change to hourly type employee
+     * ChgEmp id, salaried type, salaried
+     *  - change to salary type employee
+     * ChgEmp id, commissioned type, commissioned
+     *  - change to commission type employee
+     * ChgEmp id, hold
+     *  - leave salary to salary manager
+     * ChgEmp id, direct, bank, account
+     *  - get salary directly
+     * ChgEmp id, mail type, mail address
+     *  - get salary via mail
+     * ChgEmp id, member type, service change id, dues, service charge portion
+     *  - add from service charge
+     * ChgEmp id, nomember type
+     *  - remove from service charge
+     *
+     */
+
+    /**
+     * usecase 7
+     *
+     * pay salary to employee with the way that they choose
+     *
+     * payday 트랜잭션을 받으면, 시스템은 지정된 날짜에 임금을 받아야할 직원을 모두 가려낸다.
+     * 그리고 그들이 얼마나 받아야 하는지 결정하고, 이들이 선택한 지급 방식으로 임금을 지급한다.
+     *
+     * hourly type ->
+     *  1. every friday
+     *  2. if they works over 8, hourly rate * 1.5
+     *
+     * salary type ->
+     *  1. weekday in last week of month
+     *
+     * commission type ->
+     *  1. once in 2 weeks
+     *
+     * 3 type of getting payment
+     *  1. leave salary to salary manager
+     *  2. directly
+     *  3. via mail
+     *
+     *
+     */
 
 
 
