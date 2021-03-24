@@ -3,12 +3,10 @@ package com.ohdoking.payment;
 
 import com.ohdoking.payment.exception.IncorrectPaymentTypeEmployeeException;
 import com.ohdoking.payment.exception.ResourceNotFoundException;
-import com.ohdoking.payment.model.Employee;
-import com.ohdoking.payment.model.PaymentType;
-import com.ohdoking.payment.model.SaleReceipt;
-import com.ohdoking.payment.model.TimeCard;
+import com.ohdoking.payment.model.*;
 import com.ohdoking.payment.repository.EmployeeRepository;
 import com.ohdoking.payment.repository.SalesReceiptRepository;
+import com.ohdoking.payment.repository.ServiceChargeRepository;
 import com.ohdoking.payment.repository.TimeCardRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,6 +39,10 @@ public class EmployeeManageTest {
 
     @Mock
     SalesReceiptRepository salesReceiptRepository;
+
+    @Mock
+    ServiceChargeRepository serviceChargeRepository;
+
     /**
      * usecase 1
      *
@@ -349,7 +351,7 @@ public class EmployeeManageTest {
     }
 
     @Test
-    public void givenNullAmountWhenExecuteWriteTimeCardThenThrowNullPointerException() {
+    public void givenNullAmountWhenExecuteExecuteAddSalesReceiptThenThrowNullPointerException() {
 
         // given
         UUID employeeId = UUID.randomUUID();
@@ -375,6 +377,93 @@ public class EmployeeManageTest {
         BDDMockito.verify(employeeRepository).getEmployee(any(UUID.class));
         BDDMockito.verifyZeroInteractions(timeCardRepository);
     }
+
+    /**
+     * usecase 5
+     *
+     * t ad
+     *
+     * service charge id, amount
+     *
+     */
+
+    @Test
+    public void givenValidEmployeeIdAndAmountWhenExecuteAddServiceChargeThenCreateServiceCharge(){
+
+        // given
+        UUID employeeId = UUID.randomUUID();
+        Integer amount = 10;
+
+        Employee employee = Employee.builder()
+                .id(employeeId)
+                .name("Dokeun")
+                .address("berlin")
+                .paymentType(PaymentType.C)
+                .monthlyPay(1000.0)
+                .commissionRate(0.1)
+                .build();
+
+        given(employeeRepository.getEmployee(any(UUID.class))).willReturn(employee);
+
+        willDoNothing().given(serviceChargeRepository).createServiceCharge(any(ServiceCharge.class));
+
+        // when
+        employeeManage.addServiceCharge(employeeId, amount);
+
+        // then
+        BDDMockito.verify(employeeRepository).getEmployee(any(UUID.class));
+        BDDMockito.verify(serviceChargeRepository).createServiceCharge(any(ServiceCharge.class));
+
+
+    }
+
+    @Test
+    public void givenNonExistEmployeeWhenExecuteAddServiceChargeThenThrowResourceNotFoundException(){
+
+        // given
+        UUID employeeId = UUID.randomUUID();
+        Integer amount = 10;
+
+        given(employeeRepository.getEmployee(any(UUID.class))).willReturn(null);
+
+        // when
+        ResourceNotFoundException actual = assertThrows(ResourceNotFoundException.class, () -> employeeManage.addServiceCharge(employeeId, amount));
+
+        // then
+        assertEquals(employeeId.toString() + " id of employee doesn't exist", actual.getMessage());
+        BDDMockito.verify(employeeRepository).getEmployee(any(UUID.class));
+        BDDMockito.verifyNoMoreInteractions(serviceChargeRepository);
+
+
+    }
+
+    @Test
+    public void givenNullAmountWhenExecuteAddServiceChargeThenThrowNullPointerException() {
+
+        // given
+        UUID employeeId = UUID.randomUUID();
+        Integer amount = null;
+
+        Employee employee = Employee.builder()
+                .id(employeeId)
+                .name("Dokeun")
+                .address("berlin")
+                .paymentType(PaymentType.C)
+                .monthlyPay(1000.0)
+                .commissionRate(0.1)
+                .build();
+
+        given(employeeRepository.getEmployee(any(UUID.class))).willReturn(employee);
+
+        // when
+        NullPointerException actual = assertThrows(NullPointerException.class, () -> employeeManage.addServiceCharge(employeeId, amount));
+
+        // then
+        assertEquals("amount is marked non-null but is null", actual.getMessage());
+        BDDMockito.verify(employeeRepository).getEmployee(any(UUID.class));
+        BDDMockito.verifyNoMoreInteractions(serviceChargeRepository);
+    }
+
 
 
 

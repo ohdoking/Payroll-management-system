@@ -1,12 +1,11 @@
 package com.ohdoking.payment;
 
 import com.ohdoking.payment.exception.IncorrectPaymentTypeEmployeeException;
-import com.ohdoking.payment.model.Employee;
-import com.ohdoking.payment.model.PaymentType;
-import com.ohdoking.payment.model.SaleReceipt;
-import com.ohdoking.payment.model.TimeCard;
+import com.ohdoking.payment.exception.ResourceNotFoundException;
+import com.ohdoking.payment.model.*;
 import com.ohdoking.payment.repository.EmployeeRepository;
 import com.ohdoking.payment.repository.SalesReceiptRepository;
+import com.ohdoking.payment.repository.ServiceChargeRepository;
 import com.ohdoking.payment.repository.TimeCardRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -19,6 +18,7 @@ public class EmployeeManage {
     final private EmployeeRepository employeeRepository;
     final private TimeCardRepository timeCardRepository;
     final private SalesReceiptRepository salesReceiptRepository;
+    final private ServiceChargeRepository serviceChargeRepository;
 
     public void addEmpWithCommission(String name, String address, PaymentType paymentType, Double monthlyPay, Double commissionRate) {
         if (monthlyPay == null || commissionRate == null) {
@@ -99,5 +99,19 @@ public class EmployeeManage {
                 .amount(amount)
                 .build());
 
+    }
+
+    public void addServiceCharge(UUID employeeId, Integer amount) {
+
+        Employee employee = employeeRepository.getEmployee(employeeId);
+        if (employee == null) {
+            throw new ResourceNotFoundException(String.format("%s id of employee doesn't exist", employeeId.toString()));
+        }
+
+        serviceChargeRepository.createServiceCharge(ServiceCharge.builder()
+                .id(UUID.randomUUID())
+                .employeeId(employeeId)
+                .amount(amount)
+                .build());
     }
 }
