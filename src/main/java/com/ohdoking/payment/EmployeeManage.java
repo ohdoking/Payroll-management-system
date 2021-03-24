@@ -9,6 +9,7 @@ import com.ohdoking.payment.repository.TimeCardRepository;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 public class EmployeeManage {
@@ -16,12 +17,12 @@ public class EmployeeManage {
     final private EmployeeRepository employeeRepository;
     final private TimeCardRepository timeCardRepository;
 
-    public void addEmpWithCommission(Integer id, String name, String address, PaymentType paymentType, Double monthlyPay, Double commissionRate) {
+    public void addEmpWithCommission(String name, String address, PaymentType paymentType, Double monthlyPay, Double commissionRate) {
         if (monthlyPay == null || commissionRate == null){
             throw new NullPointerException("monthlyPay or commissionRate is missing");
         }
         addEmp(Employee.builder()
-                .id(id)
+                .id(UUID.randomUUID())
                 .name(name)
                 .address(address)
                 .paymentType(paymentType)
@@ -31,12 +32,12 @@ public class EmployeeManage {
 
     }
 
-    public void addEmpWithMonthlyPay(Integer id, String name, String address, PaymentType paymentType, Double monthlyPay) {
+    public void addEmpWithMonthlyPay(String name, String address, PaymentType paymentType, Double monthlyPay) {
         if (monthlyPay == null){
             throw new NullPointerException("monthlyPay is missing");
         }
         addEmp(Employee.builder()
-                .id(id)
+                .id(UUID.randomUUID())
                 .name(name)
                 .address(address)
                 .paymentType(paymentType)
@@ -44,12 +45,12 @@ public class EmployeeManage {
                 .build());
     }
 
-    public void addEmpWithHourlyRate(Integer id, String name, String address, PaymentType paymentType, Double hourlyRate) {
+    public void addEmpWithHourlyRate(String name, String address, PaymentType paymentType, Double hourlyRate) {
         if (hourlyRate == null){
             throw new NullPointerException("hourlyRate is missing");
         }
         addEmp(Employee.builder()
-                .id(id)
+                .id(UUID.randomUUID())
                 .name(name)
                 .address(address)
                 .paymentType(paymentType)
@@ -61,11 +62,11 @@ public class EmployeeManage {
         employeeRepository.addEmployee(employee);
     }
 
-    public void delEmp(int id) {
+    public void delEmp(UUID id) {
         employeeRepository.deleteEmployee(id);
     }
 
-    public void addTimeCard(int id, int employeeId, LocalDate localDate, Double hours) {
+    public void addTimeCard(UUID employeeId, LocalDate localDate, Double hours) {
 
         Employee employee = employeeRepository.getEmployee(employeeId);
         if(!employee.getPaymentType().equals(PaymentType.H)){
@@ -73,7 +74,7 @@ public class EmployeeManage {
         }
 
         timeCardRepository.createTimeCard(TimeCard.builder()
-                .id(id)
+                .id(UUID.randomUUID())
                 .employeeId(employeeId)
                 .date(localDate)
                 .hours(hours)

@@ -5,14 +5,15 @@ import lombok.Getter;
 import lombok.NonNull;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Getter
 @Builder
 public class TimeCard {
     @NonNull
-    Integer id;
+    UUID id;
     @NonNull
-    Integer employeeId;
+    UUID employeeId;
     @NonNull
     LocalDate date;
     @NonNull

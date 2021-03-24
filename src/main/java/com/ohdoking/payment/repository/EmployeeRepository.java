@@ -2,16 +2,18 @@ package com.ohdoking.payment.repository;
 
 import com.ohdoking.payment.model.Employee;
 
+import java.util.UUID;
+
 public class EmployeeRepository {
     public void addEmployee(Employee employee){
 
     }
 
-    public void deleteEmployee(int employeeId){
+    public void deleteEmployee(UUID employeeId){
 
     }
 
-    public Employee getEmployee(int id) {
+    public Employee getEmployee(UUID id) {
         return Employee.builder().build();
     }
 }

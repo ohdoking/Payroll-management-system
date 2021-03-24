@@ -2,11 +2,13 @@ package com.ohdoking.payment.model;
 
 import lombok.*;
 
+import java.util.UUID;
+
 @Getter
 @Builder
 public class Employee {
     @NonNull
-    private Integer id;
+    private UUID id;
     @NonNull
     private String name;
     @NonNull

@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.security.InvalidParameterException;
 import java.time.LocalDate;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -50,7 +51,6 @@ public class EmployeeManageTest {
 
         // given
         // type 1 : employee id, name, address, H, hourly rate
-        int id = 1;
         String name = "Dokeun";
         String address = "Berlin";
         PaymentType paymentType =PaymentType.H;
@@ -59,7 +59,7 @@ public class EmployeeManageTest {
         willDoNothing().given(employeeRepository).addEmployee(any(Employee.class));
 
         // when
-        employeeManage.addEmpWithHourlyRate(id, name, address, paymentType, hourlyRate);
+        employeeManage.addEmpWithHourlyRate(name, address, paymentType, hourlyRate);
 
         // then
 
@@ -72,7 +72,6 @@ public class EmployeeManageTest {
 
         // given
         // type 2 : employee id, name, address, S, salary
-        int id = 1;
         String name = "Dokeun";
         String address = "Berlin";
         PaymentType paymentType = PaymentType.S;
@@ -81,7 +80,7 @@ public class EmployeeManageTest {
         willDoNothing().given(employeeRepository).addEmployee(any(Employee.class));
 
         // when
-        employeeManage.addEmpWithMonthlyPay(id, name, address, paymentType, monthlyPay);
+        employeeManage.addEmpWithMonthlyPay(name, address, paymentType, monthlyPay);
 
         // then
         BDDMockito.verify(employeeRepository).addEmployee(any(Employee.class));
@@ -93,8 +92,6 @@ public class EmployeeManageTest {
 
         // given
         // type 3 : employee id, name, address, C, salary, commission rate
-
-        int id = 1;
         String name = "Dokeun";
         String address = "Berlin";
         PaymentType paymentType = PaymentType.C;
@@ -104,7 +101,7 @@ public class EmployeeManageTest {
         willDoNothing().given(employeeRepository).addEmployee(any(Employee.class));
 
         // when
-        employeeManage.addEmpWithCommission(id, name, address, paymentType, monthlyPay, commissionRate);
+        employeeManage.addEmpWithCommission(name, address, paymentType, monthlyPay, commissionRate);
 
         // then
         BDDMockito.verify(employeeRepository).addEmployee(any(Employee.class));
@@ -115,15 +112,13 @@ public class EmployeeManageTest {
     public void givenInProperEmployeeInfoWhenExecuteAddEmpThenThrowError() {
 
         // given
-
-        int id = 1;
-        String name = "Kenny";
+        String name = "Dokeun";
         String address = "Berlin";
         PaymentType paymentType = PaymentType.C;
         Double hourlyRate = null;
 
         // when
-        NullPointerException actual = assertThrows(NullPointerException.class, () -> employeeManage.addEmpWithHourlyRate(id, name, address, paymentType, hourlyRate));
+        NullPointerException actual = assertThrows(NullPointerException.class, () -> employeeManage.addEmpWithHourlyRate(name, address, paymentType, hourlyRate));
 
         // then
         assertEquals("hourlyRate is missing", actual.getMessage());
@@ -141,15 +136,15 @@ public class EmployeeManageTest {
     public void givenValidEmployeeIdWhenExecuteDelEmpThenDeleteUser() {
 
         // given
-        int id = 1;
+        UUID id = UUID.randomUUID();
 
-        willDoNothing().given(employeeRepository).deleteEmployee(anyInt());
+        willDoNothing().given(employeeRepository).deleteEmployee(any(UUID.class));
 
         // when
         employeeManage.delEmp(id);
 
         // then
-        BDDMockito.verify(employeeRepository).deleteEmployee(anyInt());
+        BDDMockito.verify(employeeRepository).deleteEmployee(any(UUID.class));
 
     }
 
@@ -157,16 +152,16 @@ public class EmployeeManageTest {
     public void givenInvalidEmployeeIdWhenExecuteDelEmpThenThrowInvalidParameterException() {
 
         // given
-        int id = 123123213;
+        UUID id = UUID.randomUUID();
 
-        willThrow(new InvalidParameterException("id is invalid format")).given(employeeRepository).deleteEmployee(anyInt());
+        willThrow(new InvalidParameterException("id is invalid format")).given(employeeRepository).deleteEmployee(any(UUID.class));
 
         // when
         InvalidParameterException actual = assertThrows(InvalidParameterException.class, () -> employeeManage.delEmp(id));
 
         // then
         assertEquals("id is invalid format", actual.getMessage());
-        BDDMockito.verify(employeeRepository).deleteEmployee(anyInt());
+        BDDMockito.verify(employeeRepository).deleteEmployee(any(UUID.class));
 
     }
 
@@ -174,16 +169,16 @@ public class EmployeeManageTest {
     public void givenNonExistsEmployeeIdWhenExecuteDelEmpThenThrowResourceNotFoundException() {
 
         // given
-        int id = 123123213;
+        UUID id = UUID.randomUUID();
 
-        willThrow(new ResourceNotFoundException("id doesn't exist")).given(employeeRepository).deleteEmployee(anyInt());
+        willThrow(new ResourceNotFoundException("id doesn't exist")).given(employeeRepository).deleteEmployee(any(UUID.class));
 
         // when
         ResourceNotFoundException actual = assertThrows(ResourceNotFoundException.class, () -> employeeManage.delEmp(id));
 
         // then
         assertEquals("id doesn't exist", actual.getMessage());
-        BDDMockito.verify(employeeRepository).deleteEmployee(anyInt());
+        BDDMockito.verify(employeeRepository).deleteEmployee(any(UUID.class));
 
     }
 
@@ -200,8 +195,7 @@ public class EmployeeManageTest {
     public void givenValidIdAndValidEmployeeIdAndDateAndTimeWhenExecuteWriteTimeCardThenCreateTimeRecordAndConnect() {
 
         // given
-        int id = 1;
-        int employeeId = 1;
+        UUID employeeId = UUID.randomUUID();
         LocalDate localDate = LocalDate.now();
         Double hours = 8.0;
 
@@ -213,14 +207,14 @@ public class EmployeeManageTest {
                 .hourlyRate(10.0)
                 .build();
 
-        given(employeeRepository.getEmployee(anyInt())).willReturn(employee);
+        given(employeeRepository.getEmployee(any(UUID.class))).willReturn(employee);
         willDoNothing().given(timeCardRepository).createTimeCard(any(TimeCard.class));
 
         // when
-        employeeManage.addTimeCard(id, employeeId, localDate, hours);
+        employeeManage.addTimeCard(employeeId, localDate, hours);
 
         // then
-        BDDMockito.verify(employeeRepository).getEmployee(anyInt());
+        BDDMockito.verify(employeeRepository).getEmployee(any(UUID.class));
         BDDMockito.verify(timeCardRepository).createTimeCard(any(TimeCard.class));
 
     }
@@ -229,8 +223,7 @@ public class EmployeeManageTest {
     public void givenNotHourlyRateEmpolyeeIdWhenExecuteWriteTimeCardThenThrowException() {
 
         // given
-        int id = 1;
-        int employeeId = 2;
+        UUID employeeId = UUID.randomUUID();
         LocalDate localDate = LocalDate.now();
         Double hours = 8.0;
 
@@ -242,14 +235,14 @@ public class EmployeeManageTest {
                 .monthlyPay(1000.0)
                 .build();
 
-        given(employeeRepository.getEmployee(anyInt())).willReturn(employee);
+        given(employeeRepository.getEmployee(any(UUID.class))).willReturn(employee);
 
         // when
-        IncorrectPaymentTypeEmployeeException actual = assertThrows(IncorrectPaymentTypeEmployeeException.class, () -> employeeManage.addTimeCard(id, employeeId, localDate, hours));
+        IncorrectPaymentTypeEmployeeException actual = assertThrows(IncorrectPaymentTypeEmployeeException.class, () -> employeeManage.addTimeCard(employeeId, localDate, hours));
 
         // then
         assertEquals("The employee is not H type of employee", actual.getMessage());
-        BDDMockito.verify(employeeRepository).getEmployee(anyInt());
+        BDDMockito.verify(employeeRepository).getEmployee(any(UUID.class));
         BDDMockito.verifyZeroInteractions(timeCardRepository);
     }
 
@@ -259,7 +252,7 @@ public class EmployeeManageTest {
 
         // given
         int id = 1;
-        int employeeId = 2;
+        UUID employeeId = UUID.randomUUID();
         LocalDate localDate = LocalDate.now();
         Double hours = null;
 
@@ -271,16 +264,25 @@ public class EmployeeManageTest {
                 .hourlyRate(10.0)
                 .build();
 
-        given(employeeRepository.getEmployee(anyInt())).willReturn(employee);
+        given(employeeRepository.getEmployee(any(UUID.class))).willReturn(employee);
 
         // when
-        NullPointerException actual = assertThrows(NullPointerException.class, () -> employeeManage.addTimeCard(id, employeeId, localDate, hours));
+        NullPointerException actual = assertThrows(NullPointerException.class, () -> employeeManage.addTimeCard(employeeId, localDate, hours));
 
         // then
         assertEquals("hours is marked non-null but is null", actual.getMessage());
-        BDDMockito.verify(employeeRepository).getEmployee(anyInt());
+        BDDMockito.verify(employeeRepository).getEmployee(any(UUID.class));
         BDDMockito.verifyZeroInteractions(timeCardRepository);
     }
+
+    /**
+     * usecase 4
+     *
+     * write sales reciept
+     *
+     * sales reciept id, date, time
+     *
+     */
 
 
 
