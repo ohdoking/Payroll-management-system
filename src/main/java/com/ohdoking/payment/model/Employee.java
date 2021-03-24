@@ -12,7 +12,7 @@ public class Employee {
     @NonNull
     private String address;
     @NonNull
-    private String paymentType;
+    private PaymentType paymentType;
     private Double hourlyRate;
     private Double monthlyPay;
     private Double commissionRate;
