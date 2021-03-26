@@ -18,4 +18,5 @@ public class Employee {
     private Double hourlyRate;
     private Double monthlyPay;
     private Double commissionRate;
+    private PaymentWay paymentWay;
 }

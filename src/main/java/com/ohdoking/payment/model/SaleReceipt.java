@@ -1,13 +1,13 @@
 package com.ohdoking.payment.model;
 
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
-@Setter
+@Getter
 @Builder
 public class SaleReceipt {
     @NonNull
