@@ -1,9 +1,11 @@
 package com.ohdoking.payment;
 
-import com.ohdoking.payment.exception.IncorrectPaymentTypeEmployeeException;
-import com.ohdoking.payment.exception.ResourceNotFoundException;
 import com.ohdoking.payment.model.*;
-import com.ohdoking.payment.repository.*;
+import com.ohdoking.payment.repository.EmployeeRepository;
+import com.ohdoking.payment.repository.PaymentRepository;
+import com.ohdoking.payment.service.SalesReceiptService;
+import com.ohdoking.payment.service.ServiceChargeService;
+import com.ohdoking.payment.service.TimeCardService;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDate;
@@ -15,10 +17,10 @@ import java.util.UUID;
 public class EmployeeManager {
 
     final private EmployeeRepository employeeRepository;
-    final private TimeCardRepository timeCardRepository;
-    final private SalesReceiptRepository salesReceiptRepository;
-    final private ServiceChargeRepository serviceChargeRepository;
     final private PaymentRepository paymentRepository;
+    final private ServiceChargeService serviceChargeService;
+    final private TimeCardService timeCardService;
+    final private SalesReceiptService salesReceiptService;
 
     public void addEmpWithCommission(String name, String address, PaymentType paymentType, Double monthlyPay, Double commissionRate) {
         if (monthlyPay == null || commissionRate == null) {
@@ -69,55 +71,6 @@ public class EmployeeManager {
         employeeRepository.deleteEmployee(id);
     }
 
-    public void addTimeCard(UUID employeeId, LocalDate localDate, Double hours) {
-
-        Employee employee = employeeRepository.getEmployee(employeeId);
-        if (employee == null) {
-            throw new ResourceNotFoundException(String.format("%s id of employee doesn't exist", employeeId.toString()));
-        } else if (!employee.getPaymentType().equals(PaymentType.H)) {
-            throw new IncorrectPaymentTypeEmployeeException("The employee is not H type of employee");
-        }
-
-        timeCardRepository.createTimeCard(TimeCard.builder()
-                .id(UUID.randomUUID())
-                .employeeId(employeeId)
-                .date(localDate)
-                .hours(hours)
-                .build());
-
-    }
-
-    public void addSalesReceipt(UUID employeeId, LocalDate localDate, Integer amount) {
-
-        Employee employee = employeeRepository.getEmployee(employeeId);
-        if (employee == null) {
-            throw new ResourceNotFoundException(String.format("%s id of employee doesn't exist", employeeId.toString()));
-        } else if (!employee.getPaymentType().equals(PaymentType.C)) {
-            throw new IncorrectPaymentTypeEmployeeException("The employee is not C type of employee");
-        }
-
-        salesReceiptRepository.createSaleReceipt(SaleReceipt.builder()
-                .id(UUID.randomUUID())
-                .employeeId(employeeId)
-                .date(localDate)
-                .amount(amount)
-                .build());
-
-    }
-
-    public void addServiceCharge(UUID employeeId, Integer amount) {
-
-        Employee employee = employeeRepository.getEmployee(employeeId);
-        if (employee == null) {
-            throw new ResourceNotFoundException(String.format("%s id of employee doesn't exist", employeeId.toString()));
-        }
-
-        serviceChargeRepository.createServiceCharge(ServiceCharge.builder()
-                .id(UUID.randomUUID())
-                .employeeId(employeeId)
-                .amount(amount)
-                .build());
-    }
 
     /**
      * 1. get list of employee
@@ -153,7 +106,7 @@ public class EmployeeManager {
                 double salaryAmount = 0.0;
 
                 if (PaymentType.H.equals(employee.getPaymentType())) {
-                    List<TimeCard> timeCardList = timeCardRepository.getListOfTimeCardById(employee.getId(), date.minus(Period.ofWeeks(1)));
+                    List<TimeCard> timeCardList = timeCardService.getListOfTimeCardById(employee.getId(), date.minus(Period.ofWeeks(1)));
 
                     for (TimeCard timeCard : timeCardList) {
                         salaryAmount += getSalaryAmount(employee.getHourlyRate(), timeCard.getHours());
@@ -164,10 +117,15 @@ public class EmployeeManager {
                 } else if (PaymentType.C.equals(employee.getPaymentType())) {
                     salaryAmount = employee.getMonthlyPay();
 
-                    List<SaleReceipt> saleReceiptList = salesReceiptRepository.getListOfSalesReceiptById(employee.getId(), date.minus(Period.ofWeeks(2)));
+                    List<SaleReceipt> saleReceiptList = salesReceiptService.getListOfSalesReceiptById(employee.getId(), date.minus(Period.ofWeeks(2)));
                     for (SaleReceipt saleReceipt : saleReceiptList) {
                         salaryAmount += saleReceipt.getAmount() * employee.getCommissionRate();
                     }
+                }
+
+                ServiceCharge serviceCharge = serviceChargeService.findServiceChargeById(employee.getId());
+                if (serviceCharge != null) {
+                    salaryAmount -= serviceCharge.getAmount();
                 }
 
                 paymentRepository.savePaymentt(Payment.builder()

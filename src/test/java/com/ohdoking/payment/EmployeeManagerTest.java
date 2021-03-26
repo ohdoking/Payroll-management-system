@@ -5,6 +5,9 @@ import com.ohdoking.payment.exception.IncorrectPaymentTypeEmployeeException;
 import com.ohdoking.payment.exception.ResourceNotFoundException;
 import com.ohdoking.payment.model.*;
 import com.ohdoking.payment.repository.*;
+import com.ohdoking.payment.service.SalesReceiptService;
+import com.ohdoking.payment.service.ServiceChargeService;
+import com.ohdoking.payment.service.TimeCardService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.BDDMockito;
@@ -33,16 +36,16 @@ public class EmployeeManagerTest {
     EmployeeRepository employeeRepository;
 
     @Mock
-    TimeCardRepository timeCardRepository;
-
-    @Mock
-    SalesReceiptRepository salesReceiptRepository;
-
-    @Mock
-    ServiceChargeRepository serviceChargeRepository;
-
-    @Mock
     PaymentRepository paymentRepository;
+
+    @Mock
+    ServiceChargeService serviceChargeService;
+
+    @Mock
+    TimeCardService timeCardService;
+
+    @Mock
+    SalesReceiptService salesReceiptService;
 
     /**
      * usecase 1
@@ -190,314 +193,11 @@ public class EmployeeManagerTest {
 
     }
 
-    /**
-     * usecase 3
-     * <p>
-     * write time card
-     * <p>
-     * timecard id, date, time
-     */
 
-    @Test
-    public void givenValidIdAndValidEmployeeIdAndDateAndTimeWhenExecuteWriteTimeCardThenCreateTimeRecordAndConnect() {
 
-        // given
-        UUID employeeId = UUID.randomUUID();
-        LocalDate localDate = LocalDate.now();
-        Double hours = 8.0;
 
-        Employee employee = Employee.builder()
-                .id(employeeId)
-                .name("Dokeun")
-                .address("berlin")
-                .paymentType(PaymentType.H)
-                .hourlyRate(10.0)
-                .build();
 
-        given(employeeRepository.getEmployee(any(UUID.class))).willReturn(employee);
-        willDoNothing().given(timeCardRepository).createTimeCard(any(TimeCard.class));
 
-        // when
-        employeeManager.addTimeCard(employeeId, localDate, hours);
-
-        // then
-        BDDMockito.verify(employeeRepository).getEmployee(any(UUID.class));
-        BDDMockito.verify(timeCardRepository).createTimeCard(any(TimeCard.class));
-
-    }
-
-    @Test
-    public void givenNotHourlyRateEmployeeIdWhenExecuteWriteTimeCardThenThrowIncorrectPaymentTypeEmployeeException() {
-
-        // given
-        UUID employeeId = UUID.randomUUID();
-        LocalDate localDate = LocalDate.now();
-        Double hours = 8.0;
-
-        Employee employee = Employee.builder()
-                .id(employeeId)
-                .name("Dokeun")
-                .address("berlin")
-                .paymentType(PaymentType.S)
-                .monthlyPay(1000.0)
-                .build();
-
-        given(employeeRepository.getEmployee(any(UUID.class))).willReturn(employee);
-
-        // when
-        IncorrectPaymentTypeEmployeeException actual = assertThrows(IncorrectPaymentTypeEmployeeException.class, () -> employeeManager.addTimeCard(employeeId, localDate, hours));
-
-        // then
-        assertEquals("The employee is not H type of employee", actual.getMessage());
-        BDDMockito.verify(employeeRepository).getEmployee(any(UUID.class));
-        BDDMockito.verifyZeroInteractions(timeCardRepository);
-    }
-
-
-    @Test
-    public void givenNullHourWhenExecuteWriteTimeCardThenThrowNullPointerException() {
-
-        // given
-        UUID employeeId = UUID.randomUUID();
-        LocalDate localDate = LocalDate.now();
-        Double hours = null;
-
-        Employee employee = Employee.builder()
-                .id(employeeId)
-                .name("Dokeun")
-                .address("berlin")
-                .paymentType(PaymentType.H)
-                .hourlyRate(10.0)
-                .build();
-
-        given(employeeRepository.getEmployee(any(UUID.class))).willReturn(employee);
-
-        // when
-        NullPointerException actual = assertThrows(NullPointerException.class, () -> employeeManager.addTimeCard(employeeId, localDate, hours));
-
-        // then
-        assertEquals("hours is marked non-null but is null", actual.getMessage());
-        BDDMockito.verify(employeeRepository).getEmployee(any(UUID.class));
-        BDDMockito.verifyZeroInteractions(timeCardRepository);
-    }
-
-    @Test
-    public void givenNonExistEmployeeWhenExecuteWriteTimeCardThenThrowResourceNotFoundException() {
-
-        // given
-        UUID employeeId = UUID.randomUUID();
-        LocalDate localDate = LocalDate.now();
-        Double hours = 10.0;
-
-        given(employeeRepository.getEmployee(any(UUID.class))).willReturn(null);
-
-        // when
-        ResourceNotFoundException actual = assertThrows(ResourceNotFoundException.class, () -> employeeManager.addTimeCard(employeeId, localDate, hours));
-
-        // then
-        assertEquals(employeeId.toString() + " id of employee doesn't exist", actual.getMessage());
-        BDDMockito.verify(employeeRepository).getEmployee(any(UUID.class));
-        BDDMockito.verifyNoMoreInteractions(timeCardRepository);
-    }
-
-    /**
-     * usecase 4
-     * <p>
-     * write sales receipt
-     * <p>
-     * sales receipt id, date, amount
-     */
-
-    @Test
-    public void givenValidEmployeeIdAndDateAndAmountWhenExecuteAddSalesReceiptThenCreateNewSalesReceipt() {
-
-        // given
-        UUID employeeId = UUID.randomUUID();
-        LocalDate localDate = LocalDate.now();
-        Integer amount = 10;
-
-        Employee employee = Employee.builder()
-                .id(employeeId)
-                .name("Dokeun")
-                .address("berlin")
-                .paymentType(PaymentType.C)
-                .monthlyPay(1000.0)
-                .commissionRate(0.1)
-                .build();
-
-        given(employeeRepository.getEmployee(any(UUID.class))).willReturn(employee);
-
-        willDoNothing().given(salesReceiptRepository).createSaleReceipt(any(SaleReceipt.class));
-
-        // when
-        employeeManager.addSalesReceipt(employeeId, localDate, amount);
-
-        // then
-        BDDMockito.verify(employeeRepository).getEmployee(any(UUID.class));
-        BDDMockito.verify(salesReceiptRepository).createSaleReceipt(any(SaleReceipt.class));
-
-
-    }
-
-    @Test
-    public void givenNotCommissionPaymentTypeEmployeeWhenExecuteAddSalesReceiptThenCreateNewSalesReceipt() {
-
-        // given
-        UUID employeeId = UUID.randomUUID();
-        LocalDate localDate = LocalDate.now();
-        Integer amount = 10;
-
-        Employee employee = Employee.builder()
-                .id(employeeId)
-                .name("Dokeun")
-                .address("berlin")
-                .paymentType(PaymentType.H)
-                .hourlyRate(10.0)
-                .build();
-
-        given(employeeRepository.getEmployee(any(UUID.class))).willReturn(employee);
-
-        // when
-        IncorrectPaymentTypeEmployeeException actual = assertThrows(IncorrectPaymentTypeEmployeeException.class, () -> employeeManager.addSalesReceipt(employeeId, localDate, amount));
-
-        // then
-        assertEquals("The employee is not C type of employee", actual.getMessage());
-        BDDMockito.verify(employeeRepository).getEmployee(any(UUID.class));
-        BDDMockito.verifyZeroInteractions(salesReceiptRepository);
-
-
-    }
-
-    @Test
-    public void givenNullAmountWhenExecuteExecuteAddSalesReceiptThenThrowNullPointerException() {
-
-        // given
-        UUID employeeId = UUID.randomUUID();
-        LocalDate localDate = LocalDate.now();
-        Integer amount = null;
-
-        Employee employee = Employee.builder()
-                .id(employeeId)
-                .name("Dokeun")
-                .address("berlin")
-                .paymentType(PaymentType.C)
-                .monthlyPay(1000.0)
-                .commissionRate(0.1)
-                .build();
-
-        given(employeeRepository.getEmployee(any(UUID.class))).willReturn(employee);
-
-        // when
-        NullPointerException actual = assertThrows(NullPointerException.class, () -> employeeManager.addSalesReceipt(employeeId, localDate, amount));
-
-        // then
-        assertEquals("amount is marked non-null but is null", actual.getMessage());
-        BDDMockito.verify(employeeRepository).getEmployee(any(UUID.class));
-        BDDMockito.verifyZeroInteractions(salesReceiptRepository);
-    }
-
-    @Test
-    public void givenNonExistEmployeeWhenExecuteAddSalesReceiptThenThrowResourceNotFoundException() {
-
-        // given
-        UUID employeeId = UUID.randomUUID();
-        LocalDate localDate = LocalDate.now();
-        Integer amount = 10;
-
-        given(employeeRepository.getEmployee(any(UUID.class))).willReturn(null);
-
-        // when
-        ResourceNotFoundException actual = assertThrows(ResourceNotFoundException.class, () -> employeeManager.addSalesReceipt(employeeId, localDate, amount));
-
-        // then
-        assertEquals(employeeId.toString() + " id of employee doesn't exist", actual.getMessage());
-        BDDMockito.verify(employeeRepository).getEmployee(any(UUID.class));
-        BDDMockito.verifyNoMoreInteractions(salesReceiptRepository);
-    }
-
-
-    /**
-     * usecase 5
-     * <p>
-     * write service charge
-     * <p>
-     * service charge id, amount
-     */
-
-    @Test
-    public void givenValidEmployeeIdAndAmountWhenExecuteAddServiceChargeThenCreateServiceCharge() {
-
-        // given
-        UUID employeeId = UUID.randomUUID();
-        Integer amount = 10;
-
-        Employee employee = Employee.builder()
-                .id(employeeId)
-                .name("Dokeun")
-                .address("berlin")
-                .paymentType(PaymentType.C)
-                .monthlyPay(1000.0)
-                .commissionRate(0.1)
-                .build();
-
-        given(employeeRepository.getEmployee(any(UUID.class))).willReturn(employee);
-
-        willDoNothing().given(serviceChargeRepository).createServiceCharge(any(ServiceCharge.class));
-
-        // when
-        employeeManager.addServiceCharge(employeeId, amount);
-
-        // then
-        BDDMockito.verify(employeeRepository).getEmployee(any(UUID.class));
-        BDDMockito.verify(serviceChargeRepository).createServiceCharge(any(ServiceCharge.class));
-
-
-    }
-
-    @Test
-    public void givenNonExistEmployeeWhenExecuteAddServiceChargeThenThrowResourceNotFoundException() {
-
-        // given
-        UUID employeeId = UUID.randomUUID();
-        Integer amount = 10;
-
-        given(employeeRepository.getEmployee(any(UUID.class))).willReturn(null);
-
-        // when
-        ResourceNotFoundException actual = assertThrows(ResourceNotFoundException.class, () -> employeeManager.addServiceCharge(employeeId, amount));
-
-        // then
-        assertEquals(employeeId.toString() + " id of employee doesn't exist", actual.getMessage());
-        BDDMockito.verify(employeeRepository).getEmployee(any(UUID.class));
-        BDDMockito.verifyNoMoreInteractions(serviceChargeRepository);
-    }
-
-    @Test
-    public void givenNullAmountWhenExecuteAddServiceChargeThenThrowNullPointerException() {
-
-        // given
-        UUID employeeId = UUID.randomUUID();
-        Integer amount = null;
-
-        Employee employee = Employee.builder()
-                .id(employeeId)
-                .name("Dokeun")
-                .address("berlin")
-                .paymentType(PaymentType.C)
-                .monthlyPay(1000.0)
-                .commissionRate(0.1)
-                .build();
-
-        given(employeeRepository.getEmployee(any(UUID.class))).willReturn(employee);
-
-        // when
-        NullPointerException actual = assertThrows(NullPointerException.class, () -> employeeManager.addServiceCharge(employeeId, amount));
-
-        // then
-        assertEquals("amount is marked non-null but is null", actual.getMessage());
-        BDDMockito.verify(employeeRepository).getEmployee(any(UUID.class));
-        BDDMockito.verifyNoMoreInteractions(serviceChargeRepository);
-    }
 
     /**
      * usecase 6
@@ -573,7 +273,7 @@ public class EmployeeManagerTest {
                 )
         );
 
-        given(timeCardRepository.getListOfTimeCardById(any(UUID.class), any(LocalDate.class))).willReturn(
+        given(timeCardService.getListOfTimeCardById(any(UUID.class), any(LocalDate.class))).willReturn(
                 List.of(
                         TimeCard.builder()
                                 .id(UUID.randomUUID())
@@ -596,6 +296,13 @@ public class EmployeeManagerTest {
                 )
         );
 
+        given(serviceChargeService.findServiceChargeById(any(UUID.class))).willReturn(ServiceCharge.builder()
+                .id(UUID.randomUUID())
+                .employeeId(elsaEmployeeId)
+                .amount(10)
+                .build()
+        );
+
         willDoNothing().given(paymentRepository).savePaymentt(any(Payment.class));
 
         // when
@@ -603,8 +310,9 @@ public class EmployeeManagerTest {
 
         // then
         verify(employeeRepository).getListOfEmployee();
-        verify(timeCardRepository).getListOfTimeCardById(any(UUID.class), any(LocalDate.class));
-        verifyNoMoreInteractions(salesReceiptRepository);
+        verify(timeCardService).getListOfTimeCardById(any(UUID.class), any(LocalDate.class));
+        verifyNoMoreInteractions(salesReceiptService);
+        verify(serviceChargeService).findServiceChargeById(any(UUID.class));
         verify(paymentRepository).savePaymentt(any(Payment.class));
 
     }
@@ -632,7 +340,7 @@ public class EmployeeManagerTest {
                 )
         );
 
-        given(salesReceiptRepository.getListOfSalesReceiptById(any(UUID.class), any(LocalDate.class))).willReturn(
+        given(salesReceiptService.getListOfSalesReceiptById(any(UUID.class), any(LocalDate.class))).willReturn(
                 List.of(
                         SaleReceipt.builder()
                                 .id(UUID.randomUUID())
@@ -655,6 +363,13 @@ public class EmployeeManagerTest {
                 )
         );
 
+        given(serviceChargeService.findServiceChargeById(any(UUID.class))).willReturn(ServiceCharge.builder()
+                .id(UUID.randomUUID())
+                .employeeId(kennyEmployeeId)
+                .amount(10)
+                .build()
+        );
+
         willDoNothing().given(paymentRepository).savePaymentt(any(Payment.class));
 
         // then
@@ -663,8 +378,9 @@ public class EmployeeManagerTest {
 
         // then
         verify(employeeRepository).getListOfEmployee();
-        verifyNoMoreInteractions(timeCardRepository);
-        verify(salesReceiptRepository).getListOfSalesReceiptById(any(UUID.class), any(LocalDate.class));
+        verifyNoMoreInteractions(timeCardService);
+        verify(salesReceiptService).getListOfSalesReceiptById(any(UUID.class), any(LocalDate.class));
+        verify(serviceChargeService).findServiceChargeById(any(UUID.class));
         verify(paymentRepository).savePaymentt(any(Payment.class));
 
 
@@ -692,6 +408,13 @@ public class EmployeeManagerTest {
                 )
         );
 
+        given(serviceChargeService.findServiceChargeById(any(UUID.class))).willReturn(ServiceCharge.builder()
+                .id(UUID.randomUUID())
+                .employeeId(dokeunEmployeeId)
+                .amount(10)
+                .build()
+        );
+
         willDoNothing().given(paymentRepository).savePaymentt(any(Payment.class));
 
         // when
@@ -699,8 +422,9 @@ public class EmployeeManagerTest {
 
         // then
         verify(employeeRepository).getListOfEmployee();
-        verifyNoMoreInteractions(timeCardRepository);
-        verifyNoMoreInteractions(salesReceiptRepository);
+        verifyNoMoreInteractions(timeCardService);
+        verifyNoMoreInteractions(salesReceiptService);
+        verify(serviceChargeService).findServiceChargeById(any(UUID.class));
         verify(paymentRepository).savePaymentt(any(Payment.class));
 
 
