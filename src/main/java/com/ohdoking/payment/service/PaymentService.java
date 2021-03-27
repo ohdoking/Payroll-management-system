@@ -1,11 +1,7 @@
-package com.ohdoking.payment;
+package com.ohdoking.payment.service;
 
 import com.ohdoking.payment.model.*;
-import com.ohdoking.payment.repository.EmployeeRepository;
 import com.ohdoking.payment.repository.PaymentRepository;
-import com.ohdoking.payment.service.SalesReceiptService;
-import com.ohdoking.payment.service.ServiceChargeService;
-import com.ohdoking.payment.service.TimeCardService;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDate;
@@ -14,63 +10,14 @@ import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
-public class EmployeeManager {
+public class PaymentService {
 
-    final private EmployeeRepository employeeRepository;
+
     final private PaymentRepository paymentRepository;
+    final private EmployeeService employeeService;
     final private ServiceChargeService serviceChargeService;
     final private TimeCardService timeCardService;
     final private SalesReceiptService salesReceiptService;
-
-    public void addEmpWithCommission(String name, String address, PaymentType paymentType, Double monthlyPay, Double commissionRate) {
-        if (monthlyPay == null || commissionRate == null) {
-            throw new NullPointerException("monthlyPay or commissionRate is missing");
-        }
-        addEmp(Employee.builder()
-                .id(UUID.randomUUID())
-                .name(name)
-                .address(address)
-                .paymentType(paymentType)
-                .monthlyPay(monthlyPay)
-                .commissionRate(commissionRate)
-                .build());
-
-    }
-
-    public void addEmpWithMonthlyPay(String name, String address, PaymentType paymentType, Double monthlyPay) {
-        if (monthlyPay == null) {
-            throw new NullPointerException("monthlyPay is missing");
-        }
-        addEmp(Employee.builder()
-                .id(UUID.randomUUID())
-                .name(name)
-                .address(address)
-                .paymentType(paymentType)
-                .monthlyPay(monthlyPay)
-                .build());
-    }
-
-    public void addEmpWithHourlyRate(String name, String address, PaymentType paymentType, Double hourlyRate) {
-        if (hourlyRate == null) {
-            throw new NullPointerException("hourlyRate is missing");
-        }
-        addEmp(Employee.builder()
-                .id(UUID.randomUUID())
-                .name(name)
-                .address(address)
-                .paymentType(paymentType)
-                .hourlyRate(hourlyRate)
-                .build());
-    }
-
-    private void addEmp(Employee employee) {
-        employeeRepository.addEmployee(employee);
-    }
-
-    public void delEmp(UUID id) {
-        employeeRepository.deleteEmployee(id);
-    }
-
 
     /**
      * 1. get list of employee
@@ -98,7 +45,7 @@ public class EmployeeManager {
 
     public void payday(LocalDate date) {
         //1. get list of employee
-        List<Employee> employeeList = employeeRepository.getListOfEmployee();
+        List<Employee> employeeList = employeeService.getListOfEmployee();
 
         employeeList.forEach((employee) -> {
             if (isPaymentDate(employee.getPaymentType(), date)) {
